@@ -10,4 +10,6 @@
 
 @implementation IPCollectionViewCell
 
+
+
 @end

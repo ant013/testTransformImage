@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3A55BA8E1B6B9FF900571D3A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A55BA8D1B6B9FF900571D3A /* ViewController.m */; };
 		3AC7D13D1B6901B300972E0D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3AC7D13C1B6901B300972E0D /* main.m */; };
 		3AC7D1401B6901B300972E0D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3AC7D13F1B6901B300972E0D /* AppDelegate.m */; };
-		3AC7D1431B6901B300972E0D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3AC7D1421B6901B300972E0D /* ViewController.m */; };
 		3AC7D1461B6901B300972E0D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3AC7D1441B6901B300972E0D /* Main.storyboard */; };
 		3AC7D1481B6901B300972E0D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3AC7D1471B6901B300972E0D /* Images.xcassets */; };
 		3AC7D14B1B6901B300972E0D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AC7D1491B6901B300972E0D /* LaunchScreen.xib */; };
@@ -33,13 +33,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3A55BA8D1B6B9FF900571D3A /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		3AC7D1371B6901B300972E0D /* ImageProcessor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageProcessor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AC7D13B1B6901B300972E0D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3AC7D13C1B6901B300972E0D /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		3AC7D13E1B6901B300972E0D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		3AC7D13F1B6901B300972E0D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		3AC7D1411B6901B300972E0D /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		3AC7D1421B6901B300972E0D /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		3AC7D1451B6901B300972E0D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		3AC7D1471B6901B300972E0D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3AC7D14A1B6901B300972E0D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
@@ -100,7 +100,7 @@
 				3AC7D13E1B6901B300972E0D /* AppDelegate.h */,
 				3AC7D13F1B6901B300972E0D /* AppDelegate.m */,
 				3AC7D1411B6901B300972E0D /* ViewController.h */,
-				3AC7D1421B6901B300972E0D /* ViewController.m */,
+				3A55BA8D1B6B9FF900571D3A /* ViewController.m */,
 				3AC7D1DF1B6A1B5300972E0D /* IPCollectionViewCell.h */,
 				3AC7D1E01B6A1B5300972E0D /* IPCollectionViewCell.m */,
 				3AC7D1441B6901B300972E0D /* Main.storyboard */,
@@ -254,10 +254,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				3AC7D1991B692DDD00972E0D /* IPImage.m in Sources */,
-				3AC7D1431B6901B300972E0D /* ViewController.m in Sources */,
 				3AC7D1401B6901B300972E0D /* AppDelegate.m in Sources */,
 				3AC7D13D1B6901B300972E0D /* main.m in Sources */,
 				3AC7D1E11B6A1B5300972E0D /* IPCollectionViewCell.m in Sources */,
+				3A55BA8E1B6B9FF900571D3A /* ViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,6 +383,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = YES;
+				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = NO;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = NO;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = NO;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = NO;
 				INFOPLIST_FILE = ImageProcessor/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -393,6 +401,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = YES;
+				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = NO;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = NO;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = NO;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = NO;
 				INFOPLIST_FILE = ImageProcessor/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";

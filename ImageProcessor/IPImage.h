@@ -10,20 +10,22 @@
 #import <UIKit/UIKit.h>
 
 
-              //how many bits in one color component
-
 @interface IPImage : NSObject
 {
     unsigned char* imageRawData;                //pointer on array RGB colors pixels
+
     size_t width;                               //width and height of image
     size_t height;
     size_t bytesPerPixel;                      //how many bytes need for RGBA pixel
     size_t bitsPerComponent;                   //how many bits in one color component
+
 }
 
--(id)init:(UIImage *)image;
--(id)initWithRaw:(IPImage *)imageRaw;
--(void)dealloc;
+@property BOOL inProgress;
+
+-(id)init:(UIImage *)image;                     //init object with image
+-(id)initWithRaw:(IPImage *)imageRaw;           //init object with another object (copy all)
+-(void)dealloc;                                 // free memory after malloc
 
 -(void)transformImageWithGrayScale;
 -(void)transformImageWithInvertColor;
@@ -37,7 +39,7 @@
 -(size_t)getBitsPerComponent;
 -(unsigned char*)getImageRawData;
 
--(void)setImage:(UIImage *)image;
--(UIImage *) makeImageFromRaw;
+-(void)setImage:(UIImage *)image;               //put image into object's (area in memory with RGB pixels
+-(UIImage *) makeImageFromRaw;                  //create image from area in memory
 
 @end

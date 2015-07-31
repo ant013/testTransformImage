@@ -12,5 +12,6 @@
 
 @property (weak, nonatomic) IBOutlet UIImageView *transformedImage;
 @property (weak, nonatomic) IBOutlet UIButton *actionButton;
+@property (weak, nonatomic) IBOutlet UIProgressView *activityProgress;
 
 @end
