@@ -165,6 +165,7 @@
             [workImage setValue:[NSNumber numberWithFloat:progress] forKey:@"transformProgress"];
 //            workImage.transformProgress += intervalPerPercent;
             [NSThread sleepForTimeInterval: delayInterval];
+
         }
 
         workImage.transformAction = NO;

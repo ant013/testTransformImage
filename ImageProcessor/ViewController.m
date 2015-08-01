@@ -204,9 +204,8 @@
     cell.collectionView = collectionView;
 
     IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
-
-    NSLog(@"activity process for cell #%d = %f",indexPath.row,[[cell activityProgress] progress]);
     if ([currentImage transformAction]) {
+
         [currentImage addObserver:cell forKeyPath:@"transformProgress" options:NSKeyValueObservingOptionNew context:nil];
         [currentImage setTransformAction:NO];
 //        
@@ -220,6 +219,7 @@
             [cell transformedImage].image = [currentImage makeImageFromRaw];
             [cell actionButton].tag = indexPath.row;
             [cell activityProgress].hidden = YES;
+            [currentImage removeObserver:cell forKeyPath:@"transformProgress"];
         }
     }
 //        if ([currentImage inProgress]) {

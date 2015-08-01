@@ -14,13 +14,13 @@
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
 
     if ([keyPath isEqualToString:@"transformProgress"]) {
-        NSLog(@"%@",[change objectForKey:@"new"]);
         float progress = [[change objectForKey:@"new"] floatValue];
-        [[self activityProgress] setProgress:progress animated:true];
 
-        //        NSLog(@"%@",[self collectionView]);
-        [[self collectionView] reloadData];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[self activityProgress] setProgress:progress animated:true];
 
+            if (progress==1.0f) [[self collectionView] reloadData];
+        });
     }
 }
 
