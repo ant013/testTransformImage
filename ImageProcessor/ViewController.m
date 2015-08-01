@@ -201,6 +201,8 @@
     static NSString *identifier = @"transformedImage";
 
     IPCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+    cell.collectionView = collectionView;
+
     IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
 
     NSLog(@"activity process for cell #%d = %f",indexPath.row,[[cell activityProgress] progress]);

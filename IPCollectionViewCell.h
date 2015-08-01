@@ -17,6 +17,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *actionButton;
 @property (weak, nonatomic) IBOutlet UIProgressView *activityProgress;
 
+@property (weak, nonatomic) UICollectionView *collectionView;
+
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 
 @end

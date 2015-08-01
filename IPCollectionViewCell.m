@@ -8,15 +8,20 @@
 
 #import "IPCollectionViewCell.h"
 
+
 @implementation IPCollectionViewCell
 
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
 
     if ([keyPath isEqualToString:@"transformProgress"]) {
         NSLog(@"%@",[change objectForKey:@"new"]);
-        [[self activityProgress] setProgress:[[change objectForKey:@"new"] floatValue] animated:true];
-    }
+        float progress = [[change objectForKey:@"new"] floatValue];
+        [[self activityProgress] setProgress:progress animated:true];
 
+        //        NSLog(@"%@",[self collectionView]);
+        [[self collectionView] reloadData];
+
+    }
 }
 
 @end
