@@ -10,6 +10,13 @@
 
 @implementation IPCollectionViewCell
 
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
 
+    if ([keyPath isEqualToString:@"transformProgress"]) {
+        NSLog(@"%@",[change objectForKey:@"new"]);
+        [[self activityProgress] setProgress:[[change objectForKey:@"new"] floatValue] animated:true];
+    }
+
+}
 
 @end

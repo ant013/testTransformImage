@@ -10,6 +10,14 @@
 
 @implementation IPImage
 
+@synthesize imageRawData;                //pointer on array RGB colors pixels
+
+@synthesize imageWidth;                               //Width and Height of image
+@synthesize imageHeight;
+@synthesize bytesPerPixel;                      //how many bytes need for RGBA pixel
+@synthesize bitsPerComponent;                   //how many bits in one color component
+
+
 #pragma mark - Lifecycle
 
 - (id)init:(UIImage *)image {
@@ -17,11 +25,11 @@
     CGImageRef imageRef = [image CGImage];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
-    width = CGImageGetWidth(imageRef);
-    height = CGImageGetHeight(imageRef);
+    imageWidth = CGImageGetWidth(imageRef);
+    imageHeight = CGImageGetHeight(imageRef);
     bitsPerComponent = CGImageGetBitsPerComponent(imageRef);
     bytesPerPixel = CGImageGetBitsPerPixel(imageRef)/bitsPerComponent;
-    imageRawData = malloc(width * height * bytesPerPixel);
+    imageRawData = malloc(imageWidth * imageHeight * bytesPerPixel);
     if (!imageRawData)
     {
         CGColorSpaceRelease( colorSpace );
@@ -29,9 +37,9 @@
     }
 
 
-    NSUInteger bytesPerRow = bytesPerPixel * width;
+    NSUInteger bytesPerRow = bytesPerPixel * imageWidth;
 
-    CGContextRef context = CGBitmapContextCreate(imageRawData, width, height,
+    CGContextRef context = CGBitmapContextCreate(imageRawData, imageWidth, imageHeight,
                                                  bitsPerComponent, bytesPerRow, colorSpace,
                                                  kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
     if (!context)
@@ -40,7 +48,7 @@
         return nil;
     }
 
-    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    CGContextDrawImage(context, CGRectMake(0, 0, imageWidth, imageHeight), imageRef);
 
     CGContextRelease(context);
     CGColorSpaceRelease(colorSpace);
@@ -49,15 +57,15 @@
 }
 - (id)initWithRaw:(IPImage *)imageRaw {
 
-    width = imageRaw.getWidth;
-    height = imageRaw.getHeight;
-    bytesPerPixel = imageRaw.getBytesPerPixel;
-    bitsPerComponent = imageRaw.getBitsPerComponent;
+    imageWidth = imageRaw.imageWidth;
+    imageHeight = imageRaw.imageHeight;
+    bytesPerPixel = imageRaw.bytesPerPixel;
+    bitsPerComponent = imageRaw.bitsPerComponent;
 
-    NSUInteger imageSize = width * height * bytesPerPixel;
+    NSUInteger imageSize = imageWidth * imageHeight * bytesPerPixel;
     imageRawData = malloc(imageSize);
 
-    unsigned char *pointer = imageRaw.getImageRawData;
+    unsigned char *pointer = imageRaw.imageRawData;
     for (NSUInteger index = 0 ; index < imageSize ; index++) imageRawData[index]=pointer[index];
 
     return self;
@@ -65,111 +73,7 @@
 
 - (void)dealloc {
 
-    if (imageRawData) free (imageRawData);
-}
-
-#pragma mark - transforms
-
-- (void)transformImageWithGrayScale {
-
-    NSUInteger imageSize = width * height * bytesPerPixel;
-    for (int byteIndex = 0 ; byteIndex < imageSize ; byteIndex += bytesPerPixel)
-    {
-        int outputColor = (imageRawData[byteIndex] + imageRawData[byteIndex+1] +
-                           imageRawData[byteIndex+2]) / 3;
-
-        for (int swap = 0 ; swap < (bytesPerPixel - 1) ; swap++) {
-            imageRawData[byteIndex+swap] = (unsigned char) outputColor;
-        }
-    }
-    
-}
-
-- (void)transformImageWithInvertColor {
-
-    NSUInteger imageSize = width * height * bytesPerPixel;
-    for (int byteIndex = 0 ; byteIndex < imageSize ; byteIndex += bytesPerPixel)
-    {
-        for (int swap = 0 ; swap < (bytesPerPixel - 1) ; swap++) {
-            imageRawData[byteIndex+swap] = 255 - imageRawData[byteIndex+swap];
-        }
-    }
-    
-}
-
-- (void)transformImageWithMirrorView {
-
-    for (NSUInteger row = 0 ; row < height ; row++) {
-        for (NSUInteger col = 0 ; col < ((width-1) / 2) ; col++) {
-            NSUInteger firstIndex = row * width * bytesPerPixel + col * bytesPerPixel;
-            NSUInteger lastIndex = row * width * bytesPerPixel + (width-1) * bytesPerPixel - col * bytesPerPixel;
-            for (NSUInteger swap = 0 ; swap < bytesPerPixel ; swap++) {
-                unsigned char swapColor = imageRawData[firstIndex+swap];
-                imageRawData[firstIndex+swap] = imageRawData[lastIndex+swap];
-                imageRawData[lastIndex+swap] = swapColor;
-            }
-        }
-    }    
-}
-
-- (void)transformImageWithHalfMirrorView {
-
-    int countPixels = (width/2) + (width % 2);
-
-    for (NSUInteger row = 0 ; row < height ; row++) {
-        for (NSUInteger col = 0 ; col < countPixels ; col++) {
-            NSUInteger firstIndex = row * width * bytesPerPixel + col * bytesPerPixel;
-            NSUInteger lastIndex = row * width * bytesPerPixel + (width-1) * bytesPerPixel - col * bytesPerPixel;
-            for (NSUInteger swap = 0 ; swap < bytesPerPixel ; swap++) {
-                imageRawData[lastIndex+swap] = imageRawData[firstIndex+swap];
-            }
-        }
-    }
-}
-
-- (void)transformImageWithRotate90 {
-
-    unsigned char *newImageRawData = malloc(width * height * bytesPerPixel);
-    for (NSUInteger row = 0 ; row < height ; row++) {
-        for (NSUInteger col = 0 ; col < width ; col++) {
-            NSUInteger index = (row * width * bytesPerPixel + col * bytesPerPixel);
-            NSUInteger newIndex = (col) * height * bytesPerPixel + (height-row-1) * bytesPerPixel;
-            for (NSUInteger swap = 0 ; swap < bytesPerPixel ; swap++) {
-                newImageRawData[newIndex+swap] = imageRawData[index+swap];
-            }
-        }
-    }
-    size_t swap = width;
-    width = height;
-    height = swap;
-
-    free(imageRawData);
-    imageRawData = newImageRawData;
-
-}
-
-#pragma mark get methods
-
-@synthesize inProgress;
-
-- (size_t)getWidth {
-    return width;
-}
-
-- (size_t)getHeight {
-    return height;
-}
-
-- (size_t)getBytesPerPixel {
-    return bytesPerPixel;
-}
-
-- (size_t)getBitsPerComponent {
-    return bitsPerComponent;
-}
-
-- (unsigned char*)getImageRawData {
-    return imageRawData;
+//    if (imageRawData) free (imageRawData);
 }
 
 #pragma mark set methods
@@ -179,21 +83,21 @@
 
     CGImageRef imageRef = [image CGImage];
 
-    width = CGImageGetWidth(imageRef);
-    height = CGImageGetHeight(imageRef);
+    imageWidth = CGImageGetWidth(imageRef);
+    imageHeight = CGImageGetHeight(imageRef);
 
     imageRawData = nil;
-    imageRawData = malloc(width * height * bytesPerPixel);
+    imageRawData = malloc(imageWidth * imageHeight * bytesPerPixel);
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
-    NSUInteger bytesPerRow = bytesPerPixel * width;
+    NSUInteger bytesPerRow = bytesPerPixel * imageWidth;
 
-    CGContextRef context = CGBitmapContextCreate(imageRawData, width, height,
+    CGContextRef context = CGBitmapContextCreate(imageRawData, imageWidth, imageHeight,
                                                  bitsPerComponent, bytesPerRow, colorSpace,
                                                  kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 
-    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    CGContextDrawImage(context, CGRectMake(0, 0, imageWidth, imageHeight), imageRef);
 
     CGContextRelease(context);
     CGColorSpaceRelease(colorSpace);
@@ -204,9 +108,9 @@
 - (UIImage *)makeImageFromRaw {
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    size_t bytesPerRow = bytesPerPixel * width;
+    size_t bytesPerRow = bytesPerPixel * imageWidth;
 
-    CGContextRef context = CGBitmapContextCreate(imageRawData, width, height,
+    CGContextRef context = CGBitmapContextCreate(imageRawData, imageWidth, imageHeight,
                                               bitsPerComponent, bytesPerRow, colorSpace,
                                               kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 

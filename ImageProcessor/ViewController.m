@@ -9,11 +9,13 @@
 #import "ViewController.h"
 #import "IPImage.h"
 #import "IPCollectionViewCell.h"
+#import "TransformImageService.h"
 
 @interface ViewController ()
 {
     IPImage *origImage;
-    NSMutableArray *transformedImages;
+    TransformImageService *collection;
+    
 }
 
 @end
@@ -23,11 +25,15 @@
 #pragma mark controller methods
 
 - (void)viewDidLoad {
+
     [super viewDidLoad];
-    transformedImages = [[NSMutableArray alloc] init];
+    collection = [TransformImageService sharedInstance];
+    [self transformedCollectionView].delegate = self;
+    [self transformedCollectionView].dataSource = self;
 }
 
 - (void)didReceiveMemoryWarning {
+
     [super didReceiveMemoryWarning];
 }
 
@@ -86,51 +92,43 @@
 
 #pragma mark timer and selector for ProcessView
 
-- (void)showActivityProgress {
+- (void)showActivityProgress:(IPCollectionViewCell *)cell {
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    NSTimer *progressTimer;
 
-        NSTimer *progressTimer;
-        progressTimer = [[NSTimer alloc] init];
+    NSMutableDictionary *putCellPointer = [[NSMutableDictionary alloc] init];
+    [putCellPointer setObject:cell forKey:@"cell"];
 
-        NSIndexPath *indexPath = [[NSIndexPath alloc] initWithIndex:[self->transformedImages count]];
-        IPCollectionViewCell *cell = (IPCollectionViewCell *)[[self transformedCollectionView] cellForItemAtIndexPath:indexPath];
+    progressTimer = [NSTimer scheduledTimerWithTimeInterval:0.1f
+                                                         target:self
+                                                       selector:@selector(timerProgressChange:)
+                                                       userInfo:putCellPointer
+                                                        repeats:YES];
 
-    //    [cell activityProgress].hidden = NO;
 
-//        progressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f
-//                                                         target:self
-//                                                       selector:@selector(timerProgressChange:)
-//                                                       userInfo:nil
-//                                                        repeats:YES];
-        NSUInteger delayTime =0;//= rand() % 9 + 1;
-        while (delayTime<10) {
-            [cell activityProgress].progress += 0.1f;
-//            [[self transformedCollectionView] reloadItemsAtIndexPaths:@[indexPath]];
-            [[self transformedCollectionView] reloadData];
-            sleep(1);
-            delayTime++;
-        }
-        //sleep(delayTime);
-        [[self->transformedImages lastObject] setInProgress:NO];
-//        NSLog(@"yepii delfault thread!");
-        [cell activityProgress].hidden = YES;
-
-    });
 }
 
 - (void)timerProgressChange:(NSTimer *)timer {
 
-    NSIndexPath *indexPath = [[NSIndexPath alloc] initWithIndex:[transformedImages count]];
-    IPCollectionViewCell *cell = (IPCollectionViewCell *)[[self transformedCollectionView] cellForItemAtIndexPath:indexPath];
-    NSLog(@"yepii");
-    [cell activityProgress].progress += 0.01f;
+    NSDictionary *getCellPointer = [timer userInfo];
+    IPCollectionViewCell *cell = [getCellPointer objectForKey:@"cell"];
 
-    if ([cell activityProgress].progress == 1.0f) {
-        [timer invalidate];
-//        [cell transformedImage].hidden = NO;
-//        [self actionButton].hidden = NO;
-    }
+//        NSLog(@"yepii");
+
+        float progress = [cell activityProgress].progress;
+        progress += 0.01;
+        [[cell activityProgress] setProgress:progress animated:true];
+
+        if ([[cell activityProgress] progress] == 1.0f) {
+            [timer invalidate];
+
+            [[self transformedCollectionView] reloadData];
+
+//            [[cell transformedImage] setHidden:NO];
+            //          [cell transformedImage].hidden = NO;
+//          [cell actionButton].hidden = NO;
+        }
+        
 }
 
 
@@ -141,27 +139,15 @@
 
     if (origImage) {
 
+        NSUInteger tag = (NSUInteger) [sender tag];
+
         IPImage *img = [[IPImage alloc] initWithRaw:origImage];
-        [img setInProgress:YES];
-        [self->transformedImages addObject:img];
 
-        [[self transformedCollectionView] reloadData];
+        [collection addObject:img];
+        [self.transformedCollectionView reloadData];
 
-        [self showActivityProgress];
-        [[self transformedCollectionView] reloadData];
+        [collection transformLatsObject:tag];
 
-        switch ([sender tag]) {
-            case 1: [img transformImageWithRotate90];
-                break;
-            case 2: [img transformImageWithMirrorView];
-                break;
-            case 3: [img transformImageWithHalfMirrorView];
-                break;
-            case 4: [img transformImageWithGrayScale];
-                break;
-            case 5: [img transformImageWithInvertColor];
-                break;
-        };
 
 
 
@@ -182,16 +168,16 @@
 
     switch (buttonIndex) {
         case 0: {
-            UIImage *image = [[transformedImages objectAtIndex:indexImage] makeImageFromRaw];
+            UIImage *image = [[collection objectAtIndex:indexImage] makeImageFromRaw];
             UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
         }
             break;
         case 1:
-            origImage = [[IPImage alloc] initWithRaw:[transformedImages objectAtIndex:indexImage]];
+            origImage = [[IPImage alloc] initWithRaw:[collection objectAtIndex:indexImage]];
             [self originalImageView].image = [origImage makeImageFromRaw];
             break;
         case 2:
-            [transformedImages removeObjectAtIndex:indexImage];
+            [collection removeObjectAtIndex:indexImage];
             break;
 
     }
@@ -204,9 +190,10 @@
 
 #pragma mark Collection Delegates
 
+
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
 
-    return (NSInteger)[transformedImages count];
+    return (NSInteger)[collection count];
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -214,13 +201,24 @@
     static NSString *identifier = @"transformedImage";
 
     IPCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
-    IPImage *currentImage = [transformedImages objectAtIndex:(NSUInteger)indexPath.row];
+    IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
 
-    if (![currentImage inProgress]) {
-        cell.transformedImage.image = [currentImage makeImageFromRaw];
-        cell.actionButton.tag = indexPath.row;
+    NSLog(@"activity process for cell #%d = %f",indexPath.row,[[cell activityProgress] progress]);
+    if ([currentImage transformAction]) {
+        [currentImage addObserver:cell forKeyPath:@"transformProgress" options:NSKeyValueObservingOptionNew context:nil];
+        [currentImage setTransformAction:NO];
+//        
+//        [cell transformedImage].image = [currentImage makeImageFromRaw];
+//        [cell actionButton].tag = indexPath.row;
+//        [cell activityProgress].hidden = YES;
     } else {
-
+//        if ([[cell activityProgress] progress]<1.0f);
+        if ([[cell activityProgress] progress]>=1.0f) {
+            [currentImage setInProgress:NO];
+            [cell transformedImage].image = [currentImage makeImageFromRaw];
+            [cell actionButton].tag = indexPath.row;
+            [cell activityProgress].hidden = YES;
+        }
     }
 //        if ([currentImage inProgress]) {
 //        currentImage.inProgress = [cell showActivityProgress:YES];
