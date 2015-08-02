@@ -124,8 +124,6 @@
     IPTransformImage *workImage = [self objectAtIndex:([transformImages count]-1)];
 
     [workImage setTransformAction:YES];
-    [workImage setTransformObserver:YES];
-
 //    NSLog(@"%d",workImage.transformAction);
     //    workImage.timerProcess =
 
@@ -162,6 +160,7 @@
         float progress = 0.0f;
 
         while (workImage.transformProgress < 1.0f) {
+            NSLog(@"%f",workImage.transformProgress);
             progress +=intervalPerPercent;
             [workImage setValue:[NSNumber numberWithFloat:progress] forKey:@"transformProgress"];
 //            workImage.transformProgress += intervalPerPercent;
@@ -169,6 +168,7 @@
 
         }
 
+        workImage.transformAction = NO;
         workImage.transformProgress = 1.0f;
 
     });

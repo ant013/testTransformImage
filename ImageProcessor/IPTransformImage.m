@@ -11,7 +11,6 @@
 @implementation IPTransformImage
 
 @synthesize transformAction;
-@synthesize transformObserver;
 @synthesize transformName;
 @synthesize transformProgress;
 

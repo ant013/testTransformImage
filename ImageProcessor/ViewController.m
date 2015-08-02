@@ -90,6 +90,48 @@
 }
 
 
+#pragma mark timer and selector for ProcessView
+
+- (void)showActivityProgress:(IPCollectionViewCell *)cell {
+
+    NSTimer *progressTimer;
+
+    NSMutableDictionary *putCellPointer = [[NSMutableDictionary alloc] init];
+    [putCellPointer setObject:cell forKey:@"cell"];
+
+    progressTimer = [NSTimer scheduledTimerWithTimeInterval:0.1f
+                                                         target:self
+                                                       selector:@selector(timerProgressChange:)
+                                                       userInfo:putCellPointer
+                                                        repeats:YES];
+
+
+}
+
+- (void)timerProgressChange:(NSTimer *)timer {
+
+    NSDictionary *getCellPointer = [timer userInfo];
+    IPCollectionViewCell *cell = [getCellPointer objectForKey:@"cell"];
+
+//        NSLog(@"yepii");
+
+        float progress = [cell activityProgress].progress;
+        progress += 0.01;
+        [[cell activityProgress] setProgress:progress animated:true];
+
+        if ([[cell activityProgress] progress] == 1.0f) {
+            [timer invalidate];
+
+            [[self transformedCollectionView] reloadData];
+
+//            [[cell transformedImage] setHidden:NO];
+            //          [cell transformedImage].hidden = NO;
+//          [cell actionButton].hidden = NO;
+        }
+        
+}
+
+
 
 #pragma mark action for images
 
@@ -166,19 +208,24 @@
 
         [currentImage addObserver:cell forKeyPath:@"transformProgress" options:NSKeyValueObservingOptionNew context:nil];
         [currentImage setTransformAction:NO];
+//        
+//        [cell transformedImage].image = [currentImage makeImageFromRaw];
+//        [cell actionButton].tag = indexPath.row;
+//        [cell activityProgress].hidden = YES;
     } else {
+//        if ([[cell activityProgress] progress]<1.0f);
         if ([[cell activityProgress] progress]>=1.0f) {
             [currentImage setInProgress:NO];
             [cell transformedImage].image = [currentImage makeImageFromRaw];
             [cell actionButton].tag = indexPath.row;
             [cell activityProgress].hidden = YES;
-            @try{
-                [currentImage removeObserver:cell forKeyPath:@"transformProgress"];
-            }@catch(id anException){
-            }
-
+            [currentImage removeObserver:cell forKeyPath:@"transformProgress"];
         }
     }
+//        if ([currentImage inProgress]) {
+//        currentImage.inProgress = [cell showActivityProgress:YES];
+//        cell set = @"inProgress";
+//    }
     return cell;
 
 }

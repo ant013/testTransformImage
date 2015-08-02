@@ -11,7 +11,6 @@
 @interface IPTransformImage : IPImage
 
 @property BOOL transformAction;
-@property BOOL transformObserver;
 @property NSString *transformName;
 @property float transformProgress;
 @property NSTimer *timerProcess;
