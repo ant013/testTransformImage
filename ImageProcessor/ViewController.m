@@ -9,11 +9,13 @@
 #import "ViewController.h"
 #import "IPImage.h"
 #import "IPCollectionViewCell.h"
+#import "TransformImageService.h"
 
 @interface ViewController ()
 {
     IPImage *origImage;
-    NSMutableArray *transformedImages;
+    TransformImageService *collection;
+    
 }
 
 @end
@@ -23,11 +25,15 @@
 #pragma mark controller methods
 
 - (void)viewDidLoad {
+
     [super viewDidLoad];
-    transformedImages = [[NSMutableArray alloc] init];
+    collection = [TransformImageService sharedInstance];
+    [self transformedCollectionView].delegate = self;
+    [self transformedCollectionView].dataSource = self;
 }
 
 - (void)didReceiveMemoryWarning {
+
     [super didReceiveMemoryWarning];
 }
 
@@ -67,13 +73,6 @@
 
 }
 
-//- (void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
-//{
-//    UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
-//    // Сохраняем изображение
-//    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-//    [picker release];
-//}
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
 {
     UIAlertView *alert;
@@ -91,27 +90,25 @@
 }
 
 
+
 #pragma mark action for images
 
 - (IBAction)transform:(id)sender {
 
     if (origImage) {
 
+        NSUInteger tag = (NSUInteger) [sender tag];
+
         IPImage *img = [[IPImage alloc] initWithRaw:origImage];
-        switch ([sender tag]) {
-            case 1: [img transformImageWithRotate90];
-                break;
-            case 2: [img transformImageWithMirrorView];
-                break;
-            case 3: [img transformImageWithHalfMirrorView];
-                break;
-            case 4: [img transformImageWithGrayScale];
-                break;
-            case 5: [img transformImageWithInvertColor];
-                break;
-        };
-        [transformedImages addObject:img];
-        [[self transformedCollectionView] reloadData];
+
+        [collection addObject:img];
+        [self.transformedCollectionView reloadData];
+
+        [collection transformLatsObject:tag];
+
+
+
+
     }
 }
 
@@ -125,20 +122,20 @@
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
 
-    int indexImage = [actionSheet tag];
+    NSUInteger indexImage = (NSUInteger) [actionSheet tag];
 
     switch (buttonIndex) {
         case 0: {
-            UIImage *image = [[transformedImages objectAtIndex:indexImage] makeImageFromRaw];
+            UIImage *image = [[collection objectAtIndex:indexImage] makeImageFromRaw];
             UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
         }
             break;
         case 1:
-            origImage = [[IPImage alloc] initWithRaw:[transformedImages objectAtIndex:indexImage]];
+            origImage = [[IPImage alloc] initWithRaw:[collection objectAtIndex:indexImage]];
             [self originalImageView].image = [origImage makeImageFromRaw];
             break;
         case 2:
-            [transformedImages removeObjectAtIndex:indexImage];
+            [collection removeObjectAtIndex:indexImage];
             break;
 
     }
@@ -151,9 +148,10 @@
 
 #pragma mark Collection Delegates
 
+
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
 
-    return [transformedImages count];
+    return (NSInteger)[collection count];
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -161,10 +159,26 @@
     static NSString *identifier = @"transformedImage";
 
     IPCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+    cell.collectionView = collectionView;
 
-    cell.transformedImage.image = [[transformedImages objectAtIndex:indexPath.row] makeImageFromRaw];
-    cell.actionButton.tag = indexPath.row;
+    IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
+    if ([currentImage transformAction]) {
 
+        [currentImage addObserver:cell forKeyPath:@"transformProgress" options:NSKeyValueObservingOptionNew context:nil];
+        [currentImage setTransformAction:NO];
+    } else {
+        if ([[cell activityProgress] progress]>=1.0f) {
+            [currentImage setInProgress:NO];
+            [cell transformedImage].image = [currentImage makeImageFromRaw];
+            [cell actionButton].tag = indexPath.row;
+            [cell activityProgress].hidden = YES;
+            @try{
+                [currentImage removeObserver:cell forKeyPath:@"transformProgress"];
+            }@catch(id anException){
+            }
+
+        }
+    }
     return cell;
 
 }

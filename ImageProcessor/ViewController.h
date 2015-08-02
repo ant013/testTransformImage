@@ -11,13 +11,10 @@
 @interface ViewController : UIViewController <UIImagePickerControllerDelegate, UINavigationControllerDelegate, UICollectionViewDataSource,UICollectionViewDelegate,UIActionSheetDelegate>
 
 @property (weak, nonatomic) IBOutlet UIImageView *originalImageView;
-@property (weak, nonatomic) IBOutlet UIImageView *transformedImageView;
 @property (weak, nonatomic) IBOutlet UICollectionView *transformedCollectionView;
-
 @property (nonatomic) UIImagePickerController *imagePickerController;
 
 - (IBAction)openImageFromLibrary:(id)sender;
-
 - (IBAction)transform:(id)sender;
 - (IBAction)tapImageCollection:(id)sender;
 
