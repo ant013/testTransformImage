@@ -21,10 +21,7 @@
 -(void)addObject:(IPImage *)image;
 
 -(IPTransformImage *)objectAtIndex:(NSUInteger)index;
--(IPTransformImage *)lastObject ;
 -(IPImage *)objectAtIndexWithoutTransform:(NSUInteger)index;
-
--(NSUInteger)indexOfObject:(IPTransformImage *)object;
 -(NSUInteger)count;
 
 

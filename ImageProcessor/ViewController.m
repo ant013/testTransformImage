@@ -108,46 +108,6 @@
 
 
 
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-            IPTransformImage *workImage = [self->collection lastObject];
-            [workImage setTransformAction:YES];
-            NSTimeInterval delayInterval = 0.1f;
-            NSInteger time = rand()%10 + 1;
-            float intervalPerPercent = (float) delayInterval / time;
-            float progress = 0.0f;
-
-            while ([self->collection objectAtIndex:[self->collection indexOfObject:workImage]].transformProgress < 1.0f) {
-                progress +=intervalPerPercent;
-//                [workImage setValue:[NSNumber numberWithFloat:progress] forKey:@"transformProgress"];
-                workImage.transformProgress += intervalPerPercent;
-
-
-                dispatch_sync(dispatch_get_main_queue(),^{
-
-                    NSUInteger ind = [self->collection indexOfObject:workImage];
-                    NSIndexPath *index = [NSIndexPath indexPathForItem:(NSInteger)ind inSection:0];
-
-                    IPCollectionViewCell *cell = nil;
-                    while (!cell) {
-                        cell = (IPCollectionViewCell*)[[self transformedCollectionView] cellForItemAtIndexPath:index];
-                    }
-                    NSLog(@"I got it!");
-                    [[cell activityProgress] setProgress:progress animated:YES];
-//
-                });
-                [NSThread sleepForTimeInterval: delayInterval];
-
-            }
-            
-            [workImage setTransformAction:NO];
-            [[self transformedCollectionView] reloadData];
-
-        });
-
-        [[self transformedCollectionView] reloadData];
-
-
 
     }
 }
@@ -199,14 +159,25 @@
     static NSString *identifier = @"transformedImage";
 
     IPCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+    cell.collectionView = collectionView;
 
     IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
     if ([currentImage transformAction]) {
 
+        [currentImage addObserver:cell forKeyPath:@"transformProgress" options:NSKeyValueObservingOptionNew context:nil];
+        [currentImage setTransformAction:NO];
     } else {
-        [cell transformedImage].image = [currentImage makeImageFromRaw];
-        [cell actionButton].tag = indexPath.row;
-        [cell activityProgress].hidden = YES;
+        if ([[cell activityProgress] progress]>=1.0f) {
+            [currentImage setInProgress:NO];
+            [cell transformedImage].image = [currentImage makeImageFromRaw];
+            [cell actionButton].tag = indexPath.row;
+            [cell activityProgress].hidden = YES;
+            @try{
+                [currentImage removeObserver:cell forKeyPath:@"transformProgress"];
+            }@catch(id anException){
+            }
+
+        }
     }
     return cell;
 
