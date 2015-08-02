@@ -95,6 +95,7 @@
 
 #pragma mark action for images
 
+
 - (void) ReloadProgressDelegate {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         while ([self->transformingIndexes count]) {
@@ -103,6 +104,7 @@
             NSMutableArray *indexes;
             @synchronized(self->transformingIndexes) {
                 indexes = [NSMutableArray arrayWithArray:self->transformingIndexes];
+//                NSLog(@"arr = %@",indexes);
             }
             
             for (NSIndexPath *index in indexes) {
@@ -118,8 +120,8 @@
                 } else {
                     dispatch_sync(dispatch_get_main_queue(),^{
                         [toRemove addObject:index];
-                        [[self transformedCollectionView] reloadItemsAtIndexPaths:@[index]];
-//                        [[self transformedCollectionView] reloadData];
+                        if ([self->collection count]>index.item)
+                            [[self transformedCollectionView] reloadItemsAtIndexPaths:@[index]];
                     });
                 }
             }            
@@ -167,6 +169,22 @@
 
 }
 
+- (void) deleteImageFromCollectionAtIndex:(NSUInteger)indexImage {
+    [collection removeObjectAtIndex:indexImage];
+    @synchronized (transformingIndexes) {
+        if ([transformingIndexes count]>0) {
+            for (NSUInteger i=0 ; i<[transformingIndexes count] ; i++) {
+                NSIndexPath *index = [transformingIndexes objectAtIndex:i];
+                if ( index.item > indexImage) {
+                    NSIndexPath *newIndex = [NSIndexPath indexPathForItem:(index.item-1) inSection:0];
+                    [transformingIndexes replaceObjectAtIndex:i withObject:newIndex];
+                }
+            }
+        }
+    }
+    [[self transformedCollectionView] reloadData];
+}
+
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
 
     NSUInteger indexImage = (NSUInteger) [actionSheet tag];
@@ -182,13 +200,10 @@
             [self originalImageView].image = [origImage makeImageFromRaw];
             break;
         case 2:
-            [collection removeObjectAtIndex:indexImage];
+            [self deleteImageFromCollectionAtIndex:indexImage];
             break;
 
     }
-
-    [[self transformedCollectionView] reloadData];
-
 }
 
 
@@ -206,9 +221,10 @@
     static NSString *identifier = @"transformedImage";
 
     IPCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
-
+    [cell setTag:indexPath.row];
     IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
-    NSLog(@"index collection cell = %@ transform = %d",indexPath,[currentImage transformAction]);
+
+    //    NSLog(@"index collection cell = %@ transform = %d",indexPath,[currentImage transformAction]);
     @synchronized (currentImage) {
     if ([currentImage transformAction]) {
             [cell transformedImage].hidden = YES;

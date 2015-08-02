@@ -81,10 +81,6 @@
 
     IPTransformImage *workImage = [transformImages objectAtIndex:index];
 
-//    [workImage setTransformAction:YES];
-    NSLog(@"%d",workImage.transformAction);
-    //    workImage.timerProcess =
-
     switch (type) {
         case 1:
             workImage.transformName = @"Rotate";
@@ -162,7 +158,7 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
         NSTimeInterval delayInterval = 0.1f;
-        NSInteger time = rand()%20 + 1;
+        NSInteger time = rand()%25 + 1;
         float intervalPerPercent = (float) delayInterval / time;
  
         while ([workImage transformProgress]<1.0f) {
