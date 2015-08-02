@@ -96,25 +96,36 @@
 #pragma mark action for images
 
 - (void) ReloadProgressDelegate {
-
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         while ([self->transformingIndexes count]) {
-            for (NSIndexPath *index in self->transformingIndexes) {
-
+            
+            NSMutableArray *toRemove = [[NSMutableArray alloc] init];
+            NSMutableArray *indexes;
+            @synchronized(self->transformingIndexes) {
+                indexes = [NSMutableArray arrayWithArray:self->transformingIndexes];
+            }
+            
+            for (NSIndexPath *index in indexes) {
+//                NSLog(@"work with index = %@",index);
                 IPTransformImage *image = [self->collection objectAtIndex:(NSUInteger)index.row];
-                if ([image transformProgress]<1.0f) {
+                if ([image transformAction]) {
                     dispatch_sync(dispatch_get_main_queue(),^{
                        IPCollectionViewCell *cell = nil;
-                        while (!cell) {
                             cell = (IPCollectionViewCell*)[[self transformedCollectionView] cellForItemAtIndexPath:index];
-                        }
-    //                    NSLog(@"I got it!");
-                        [[cell activityProgress] setProgress:[image transformProgress] animated:NO];
-                        //
+                        if (cell) [[cell activityProgress] setProgress:[image transformProgress] animated:NO];
                     });
 
                 } else {
-                    [self->transformingIndexes removeObject:index];
+                    dispatch_sync(dispatch_get_main_queue(),^{
+                        [toRemove addObject:index];
+                        [[self transformedCollectionView] reloadItemsAtIndexPaths:@[index]];
+//                        [[self transformedCollectionView] reloadData];
+                    });
+                }
+            }            
+            if ([toRemove count] > 0) {
+                @synchronized(self->transformingIndexes) {
+                    [self->transformingIndexes removeObjectsInArray:toRemove];
                 }
             }
         }
@@ -131,15 +142,20 @@
         IPImage *img = [[IPImage alloc] initWithRaw:origImage];
 
         [collection addObject:img];
-        [self.transformedCollectionView reloadData];
-
         [collection transformLatsObject:tag];
+        [[self transformedCollectionView] reloadData];
+
 
         NSIndexPath *index = [NSIndexPath indexPathForItem:(NSInteger)([collection count]-1) inSection:0];
-        [transformingIndexes addObject:index];
+        
+        @synchronized(transformingIndexes) {
+            [transformingIndexes addObject:index];
+        }
+        
         if ([transformingIndexes count]==1) [self ReloadProgressDelegate];
 
         [[self transformedCollectionView] reloadData];
+
     }
 }
 
@@ -192,12 +208,20 @@
     IPCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
 
     IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
+    NSLog(@"index collection cell = %@ transform = %d",indexPath,[currentImage transformAction]);
+    @synchronized (currentImage) {
     if ([currentImage transformAction]) {
-
+            [cell transformedImage].hidden = YES;
+            [cell actionButton].hidden = YES;
+            [cell activityProgress].hidden = NO;
     } else {
+        [cell transformedImage].hidden = NO;
+        [cell actionButton].hidden = NO;
+        [cell activityProgress].hidden = YES;
+
         [cell transformedImage].image = [currentImage makeImageFromRaw];
         [cell actionButton].tag = indexPath.row;
-        [cell activityProgress].hidden = YES;
+    }
     }
     return cell;
 

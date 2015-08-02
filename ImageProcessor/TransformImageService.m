@@ -30,7 +30,7 @@
     transformImage.imageHeight = image.imageHeight;
     transformImage.bytesPerPixel = image.bytesPerPixel;
     transformImage.bitsPerComponent = image.bitsPerComponent;
-    transformImage.transformAction = NO;
+    transformImage.transformAction = YES;
     transformImage.transformName = @"NoTransform";
     transformImage.transformProgress = 0.0f;
 
@@ -161,19 +161,15 @@
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
-        [workImage setTransformAction:YES];
         NSTimeInterval delayInterval = 0.1f;
-        NSInteger time = rand()%10 + 1;
+        NSInteger time = rand()%20 + 1;
         float intervalPerPercent = (float) delayInterval / time;
  
         while ([workImage transformProgress]<1.0f) {
-//            progress +=intervalPerPercent;
-            //                [workImage setValue:[NSNumber numberWithFloat:progress] forKey:@"transformProgress"];
             workImage.transformProgress += intervalPerPercent;
             [NSThread sleepForTimeInterval: delayInterval];
-
         }
-
+        workImage.transformProgress = 1.0f;
         [workImage setTransformAction:NO];
     });
 
