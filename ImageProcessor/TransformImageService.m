@@ -132,7 +132,6 @@
 
     IPTransformImage *workImage = [self objectAtIndex:([transformImages count]-1)];
     [workImage setTransformAction:YES];
-    [workImage setTransformObserver:YES];
 
     switch (type) {
         case 1:
@@ -158,7 +157,26 @@
         default:
             return NO;
             break;
-    }    
+    }
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+
+        [workImage setTransformAction:YES];
+        NSTimeInterval delayInterval = 0.1f;
+        NSInteger time = rand()%10 + 1;
+        float intervalPerPercent = (float) delayInterval / time;
+ 
+        while ([workImage transformProgress]<1.0f) {
+//            progress +=intervalPerPercent;
+            //                [workImage setValue:[NSNumber numberWithFloat:progress] forKey:@"transformProgress"];
+            workImage.transformProgress += intervalPerPercent;
+            [NSThread sleepForTimeInterval: delayInterval];
+
+        }
+
+        [workImage setTransformAction:NO];
+    });
+
     return YES;
 }
 

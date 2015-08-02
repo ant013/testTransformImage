@@ -13,9 +13,11 @@
 
 @interface ViewController ()
 {
+
     IPImage *origImage;
     TransformImageService *collection;
-    
+    NSMutableArray *transformingIndexes;
+
 }
 
 @end
@@ -28,8 +30,8 @@
 
     [super viewDidLoad];
     collection = [TransformImageService sharedInstance];
-    [self transformedCollectionView].delegate = self;
-    [self transformedCollectionView].dataSource = self;
+    transformingIndexes = [[NSMutableArray alloc] init];
+
 }
 
 - (void)didReceiveMemoryWarning {
@@ -93,6 +95,33 @@
 
 #pragma mark action for images
 
+- (void) ReloadProgressDelegate {
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        while ([self->transformingIndexes count]) {
+            for (NSIndexPath *index in self->transformingIndexes) {
+
+                IPTransformImage *image = [self->collection objectAtIndex:(NSUInteger)index.row];
+                if ([image transformProgress]<1.0f) {
+                    dispatch_sync(dispatch_get_main_queue(),^{
+                       IPCollectionViewCell *cell = nil;
+                        while (!cell) {
+                            cell = (IPCollectionViewCell*)[[self transformedCollectionView] cellForItemAtIndexPath:index];
+                        }
+    //                    NSLog(@"I got it!");
+                        [[cell activityProgress] setProgress:[image transformProgress] animated:NO];
+                        //
+                    });
+
+                } else {
+                    [self->transformingIndexes removeObject:index];
+                }
+            }
+        }
+    });
+}
+
+
 - (IBAction)transform:(id)sender {
 
     if (origImage) {
@@ -106,49 +135,11 @@
 
         [collection transformLatsObject:tag];
 
-
-
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-            IPTransformImage *workImage = [self->collection lastObject];
-            [workImage setTransformAction:YES];
-            NSTimeInterval delayInterval = 0.1f;
-            NSInteger time = rand()%10 + 1;
-            float intervalPerPercent = (float) delayInterval / time;
-            float progress = 0.0f;
-
-            while ([self->collection objectAtIndex:[self->collection indexOfObject:workImage]].transformProgress < 1.0f) {
-                progress +=intervalPerPercent;
-//                [workImage setValue:[NSNumber numberWithFloat:progress] forKey:@"transformProgress"];
-                workImage.transformProgress += intervalPerPercent;
-
-
-                dispatch_sync(dispatch_get_main_queue(),^{
-
-                    NSUInteger ind = [self->collection indexOfObject:workImage];
-                    NSIndexPath *index = [NSIndexPath indexPathForItem:(NSInteger)ind inSection:0];
-
-                    IPCollectionViewCell *cell = nil;
-                    while (!cell) {
-                        cell = (IPCollectionViewCell*)[[self transformedCollectionView] cellForItemAtIndexPath:index];
-                    }
-                    NSLog(@"I got it!");
-                    [[cell activityProgress] setProgress:progress animated:YES];
-//
-                });
-                [NSThread sleepForTimeInterval: delayInterval];
-
-            }
-            
-            [workImage setTransformAction:NO];
-            [[self transformedCollectionView] reloadData];
-
-        });
+        NSIndexPath *index = [NSIndexPath indexPathForItem:(NSInteger)([collection count]-1) inSection:0];
+        [transformingIndexes addObject:index];
+        if ([transformingIndexes count]==1) [self ReloadProgressDelegate];
 
         [[self transformedCollectionView] reloadData];
-
-
-
     }
 }
 
