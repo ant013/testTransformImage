@@ -50,6 +50,15 @@
 
     return nil;
 }
+-(IPTransformImage *)lastObject {
+
+    return [transformImages lastObject];
+}
+-(NSUInteger)indexOfObject:(IPTransformImage *)object {
+
+    return [transformImages indexOfObjectIdenticalTo:object];
+}
+
 
 -(IPImage *)objectAtIndexWithoutTransform:(NSUInteger)index {
 
@@ -122,12 +131,8 @@
 
 
     IPTransformImage *workImage = [self objectAtIndex:([transformImages count]-1)];
-
     [workImage setTransformAction:YES];
     [workImage setTransformObserver:YES];
-
-//    NSLog(@"%d",workImage.transformAction);
-    //    workImage.timerProcess =
 
     switch (type) {
         case 1:
@@ -153,26 +158,7 @@
         default:
             return NO;
             break;
-    }
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        NSTimeInterval delayInterval = 0.1f;
-        NSInteger time = rand()%10 + 1;
-        float intervalPerPercent = (float) delayInterval / time;
-        float progress = 0.0f;
-
-        while (workImage.transformProgress < 1.0f) {
-            progress +=intervalPerPercent;
-            [workImage setValue:[NSNumber numberWithFloat:progress] forKey:@"transformProgress"];
-//            workImage.transformProgress += intervalPerPercent;
-            [NSThread sleepForTimeInterval: delayInterval];
-
-        }
-
-        workImage.transformProgress = 1.0f;
-
-    });
-    
+    }    
     return YES;
 }
 
