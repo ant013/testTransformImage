@@ -14,9 +14,9 @@
 @interface ViewController ()
 {
 
-    IPImage *origImage;
-    TransformImageService *collection;
-    NSMutableArray *transformingIndexes;
+    IPImage *origImage;                              //contain main original image
+    TransformImageService *collection;               //sharedInstance of array all transformed images
+    NSMutableArray *transformingIndexes;             //contain indexes elements which progress need to change
 
 }
 
@@ -95,36 +95,38 @@
 
 #pragma mark action for images
 
-
+// method starts when starts progress, using index of action images and repaint progressBars on it;
 - (void) ReloadProgressDelegate {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         while ([self->transformingIndexes count]) {
             
             NSMutableArray *toRemove = [[NSMutableArray alloc] init];
             NSMutableArray *indexes;
+
             @synchronized(self->transformingIndexes) {
                 indexes = [NSMutableArray arrayWithArray:self->transformingIndexes];
-//                NSLog(@"arr = %@",indexes);
             }
             
             for (NSIndexPath *index in indexes) {
-//                NSLog(@"work with index = %@",index);
-                IPTransformImage *image = [self->collection objectAtIndex:(NSUInteger)index.row];
-                if ([image transformAction]) {
-                    dispatch_sync(dispatch_get_main_queue(),^{
-                       IPCollectionViewCell *cell = nil;
-                            cell = (IPCollectionViewCell*)[[self transformedCollectionView] cellForItemAtIndexPath:index];
-                        if (cell) [[cell activityProgress] setProgress:[image transformProgress] animated:NO];
-                    });
 
-                } else {
-                    dispatch_sync(dispatch_get_main_queue(),^{
-                        [toRemove addObject:index];
-                        if ([self->collection count]>index.item)
-                            [[self transformedCollectionView] reloadItemsAtIndexPaths:@[index]];
-                    });
-                }
-            }            
+                IPTransformImage *image = [self->collection objectAtIndex:(NSUInteger)index.row];
+                dispatch_sync(dispatch_get_main_queue(),^{
+                    if ([image transformAction]) {
+
+
+                            IPCollectionViewCell *cell = nil;
+                            cell = (IPCollectionViewCell*)[[self transformedCollectionView] cellForItemAtIndexPath:index];
+                            if (cell) [[cell activityProgress] setProgress:[image transformProgress] animated:  NO];
+
+                    } else {
+
+                            [toRemove addObject:index];
+                            if ([self->collection count]>index.item)
+                                [[self transformedCollectionView] reloadItemsAtIndexPaths:@[index]];
+                    }
+                });
+
+            }
             if ([toRemove count] > 0) {
                 @synchronized(self->transformingIndexes) {
                     [self->transformingIndexes removeObjectsInArray:toRemove];
@@ -169,6 +171,7 @@
 
 }
 
+// After delete some already transformed image, we need decrease all images indexes in delegate wich > this
 - (void) deleteImageFromCollectionAtIndex:(NSUInteger)indexImage {
     [collection removeObjectAtIndex:indexImage];
     @synchronized (transformingIndexes) {
@@ -196,6 +199,7 @@
         }
             break;
         case 1:
+            [origImage imageRelease];
             origImage = [[IPImage alloc] initWithRaw:[collection objectAtIndex:indexImage]];
             [self originalImageView].image = [origImage makeImageFromRaw];
             break;
@@ -224,7 +228,6 @@
     [cell setTag:indexPath.row];
     IPTransformImage *currentImage = [collection objectAtIndex:(NSUInteger)indexPath.row];
 
-    //    NSLog(@"index collection cell = %@ transform = %d",indexPath,[currentImage transformAction]);
     @synchronized (currentImage) {
     if ([currentImage transformAction]) {
             [cell transformedImage].hidden = YES;

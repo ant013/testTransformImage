@@ -21,6 +21,8 @@
     return sharedInstance;
 }
 
+#pragma mark manipulate actions
+
 -(void)addObject:(IPImage *)image {
 
     IPTransformImage *transformImage = [[IPTransformImage alloc] init];
@@ -44,6 +46,8 @@
 
 }
 
+#pragma mark get methods
+
 -(IPTransformImage *)objectAtIndex:(NSUInteger)index {
 
     if (index<[transformImages count]) return [transformImages objectAtIndex:index];
@@ -53,10 +57,6 @@
 -(IPTransformImage *)lastObject {
 
     return [transformImages lastObject];
-}
--(NSUInteger)indexOfObject:(IPTransformImage *)object {
-
-    return [transformImages indexOfObjectIdenticalTo:object];
 }
 
 
@@ -73,56 +73,20 @@
     return image;
 
 }
+
+#pragma mark index and count
+
+-(NSUInteger)indexOfObject:(IPTransformImage *)object {
+
+    return [transformImages indexOfObjectIdenticalTo:object];
+}
+
 -(NSUInteger)count {
     return [transformImages count];
 }
 
--(BOOL)transformObjectAtIndex:(NSUInteger)index type:(NSUInteger)type {
+#pragma mark transforming methods
 
-    IPTransformImage *workImage = [transformImages objectAtIndex:index];
-
-    switch (type) {
-        case 1:
-            workImage.transformName = @"Rotate";
-            [workImage transformImageWithRotate90];
-            break;
-        case 2:
-            workImage.transformName = @"Mirror";
-            [workImage transformImageWithMirrorView];
-            break;
-        case 3:
-            workImage.transformName = @"Half Mirror";
-            [workImage transformImageWithHalfMirrorView];
-            break;
-        case 4:
-            workImage.transformName = @"Gray Scale";
-            [workImage transformImageWithGrayScale];
-            break;
-        case 5:
-            workImage.transformName = @"Invert";
-            [workImage transformImageWithInvertColor];
-            break;
-        default:
-            return NO;
-            break;
-    }
-
-        NSTimeInterval delayInterval = 0.1f;
-        NSInteger time = rand()%10 + 1;
-        float intervalPerPercent = (float) delayInterval/time;
-
-        while (workImage.transformProgress < 1.0f) {
-            NSLog(@"%f",workImage.transformProgress);
-            float newProgress = workImage.transformProgress + intervalPerPercent;
-            [workImage setTransformProgress:newProgress];
-            [NSThread sleepForTimeInterval: delayInterval];
-        }
-
-        workImage.transformAction = NO;
-        workImage.transformProgress = 1.0f;
-
-    return YES;
-}
 -(BOOL)transformLatsObject:(NSUInteger)type {
 
 
@@ -158,7 +122,7 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
         NSTimeInterval delayInterval = 0.1f;
-        NSInteger time = rand()%25 + 1;
+        NSInteger time = rand()%29 + 1;
         float intervalPerPercent = (float) delayInterval / time;
  
         while ([workImage transformProgress]<1.0f) {

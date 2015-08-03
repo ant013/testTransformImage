@@ -9,14 +9,10 @@
 #import <UIKit/UIKit.h>
 
 @interface IPCollectionViewCell : UICollectionViewCell
-{
-    NSTimer *progressTimer;
-    
-}
+
 @property (weak, nonatomic) IBOutlet UIImageView *transformedImage;
 @property (weak, nonatomic) IBOutlet UIButton *actionButton;
 @property (weak, nonatomic) IBOutlet UIProgressView *activityProgress;
-@property (weak, nonatomic) UICollectionView *collectionView;
 
 
 @end

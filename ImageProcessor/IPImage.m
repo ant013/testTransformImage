@@ -55,12 +55,15 @@
 
     return self;
 }
+
 - (id)initWithRaw:(IPImage *)imageRaw {
 
     imageWidth = imageRaw.imageWidth;
     imageHeight = imageRaw.imageHeight;
     bytesPerPixel = imageRaw.bytesPerPixel;
     bitsPerComponent = imageRaw.bitsPerComponent;
+
+    free(imageRawData);
 
     NSUInteger imageSize = imageWidth * imageHeight * bytesPerPixel;
     imageRawData = malloc(imageSize);
@@ -71,14 +74,15 @@
     return self;
 }
 
-- (void)dealloc {
+- (void)imageRelease {
 
-//    if (imageRawData) free (imageRawData);
+    free(imageRawData);
 }
 
 #pragma mark set methods
 
 
+//put image into object's (area in memory with RGB pixels
 - (void)setImage:(UIImage *)image {
 
     CGImageRef imageRef = [image CGImage];
@@ -86,7 +90,7 @@
     imageWidth = CGImageGetWidth(imageRef);
     imageHeight = CGImageGetHeight(imageRef);
 
-    imageRawData = nil;
+    free (imageRawData);
     imageRawData = malloc(imageWidth * imageHeight * bytesPerPixel);
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -105,6 +109,7 @@
     
 }
 
+//create image from area in memory
 - (UIImage *)makeImageFromRaw {
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();

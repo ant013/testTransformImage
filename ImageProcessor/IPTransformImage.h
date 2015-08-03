@@ -10,11 +10,9 @@
 
 @interface IPTransformImage : IPImage
 
-@property BOOL transformAction;
-@property BOOL transformObserver;
-@property NSString *transformName;
-@property float transformProgress;
-@property NSTimer *timerProcess;
+@property BOOL transformAction;                 //YES - if object is transforming now
+@property float transformProgress;              //progress of object transforming
+@property NSString *transformName;              //name of transform action
 
 -(void)transformImageWithGrayScale;
 -(void)transformImageWithInvertColor;

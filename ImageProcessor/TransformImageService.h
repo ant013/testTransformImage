@@ -13,26 +13,20 @@
     NSMutableArray *transformImages;
 }
 
-//@property NSMutableArray *transformImages;
-
 +(id)sharedInstance;
 
--(void)removeObjectAtIndex:(NSUInteger)index;
 -(void)addObject:(IPImage *)image;
+-(void)removeObjectAtIndex:(NSUInteger)index;
 
 -(IPTransformImage *)objectAtIndex:(NSUInteger)index;
 -(IPTransformImage *)lastObject ;
+
 -(IPImage *)objectAtIndexWithoutTransform:(NSUInteger)index;
 
 -(NSUInteger)indexOfObject:(IPTransformImage *)object;
 -(NSUInteger)count;
 
-
--(BOOL)transformObjectAtIndex:(NSUInteger)index type:(NSUInteger)type;
 -(BOOL)transformLatsObject:(NSUInteger)type;
-
-//-(NSNumber *)objectProgressAtIndex:(NSUInteger)index;
-//-(void)setObjectProgressAtIndex:(NSUInteger)index progress:(NSNumber *)progress;
 
 @end
 
